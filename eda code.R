@@ -1,7 +1,14 @@
 library(tidyverse)
 
 # determining whether those with early season (first three races) wins have better overall seasons
+# hypothesis unjustified??
 
+indycar <- indycar %>% 
+  group_by(drive_id) %>% 
+  mutate(seasonpoints = sum(points)) %>% 
+  ungroup()
+
+  #first three races vs overall scores
 indycar_firstthree <- indycar %>% 
   arrange(date) %>% 
   group_by(drive_id) %>% 
@@ -24,6 +31,7 @@ indycar_firstthree %>%
              y = seasonpoints)) +
   geom_point()
 
+#last three races vs overall score
 indycar_lastthree <- indycar %>% 
   arrange(date) %>% 
   group_by(drive_id) %>% 
@@ -46,6 +54,7 @@ indycar_lastthree %>%
              y = seasonpoints)) +
   geom_point()
 
+  #selecting three random races vs overall scores
 n_distinct(indycar$race_id)
 
 sample(1:17,3)
@@ -72,10 +81,21 @@ indycar_randthree %>%
              y = seasonpoints)) +
   geom_point() 
 
+
+
+#histogram of 
+indycar_seasonpoints <- indycar %>% 
+  group_by(drive_id) %>% 
+  summarize(seasonpoints = sum(point))
+  
+
 indycar_randthree %>% 
   ggplot(aes(x = seasonpoints)) +
   geom_histogram()
   
+indycar_randthree %>% 
+  ggplot(aes(x = seasonpoints)) +
+  stat_ecdf()
 
 # comparing starting position and finishing position
 
@@ -116,8 +136,8 @@ indycar %>%
 # top 10
 indycar %>% 
   filter(finish %in% c(1:10)) %>% 
- ggplot(aes(x = track_type,
-                     color = chassis_engine_tires)) +
+  ggplot(aes(x = track_type,
+             fill = chassis_engine_tires)) +
   geom_bar()
 
 seasonracers <- indycar %>% 
@@ -137,24 +157,76 @@ seasonracers %>%
 
 indycar_plot <- indycar %>% 
   select(race_id, finish, points, drive_id, track_type) %>% 
-  group_by(drive_id, track_type) %>% 
-  mutate(points_earned = sum(points)) %>% 
+  group_by(track_type,drive_id) %>% 
+  mutate(track_typepoints = sum(points)) %>% 
+  ungroup() %>%
   group_by(drive_id) %>% 
   mutate(races = n()) %>% 
   filter(races == 17) %>% 
   mutate(seasonpoints = sum(points))
   
 
+
+
 indycar_plot %>%  ggplot() +
   geom_col(aes(x = drive_id,
                y = points,
                fill = track_type),
-           position = "dodge") +
+           position = "") +
   coord_flip() 
 
 
-indycar %>% 
+
+Titanic <- as.data.frame(Titanic)
+Titanic %>% ggplot(aes(x = Class, y = Freq, fill = Survived)) +
+  geom_col()
+
+Titanic %>% ggplot(aes(x = Class, y = Freq, fill = Survived)) +
+  geom_col(position = "dodge")
+
+
+indycar_scores<-indycar %>% 
   group_by(drive_id) %>% 
   summarize(seasonpoints = sum(points))
+indycar_scores %>% 
+  ggplot(aes(x = seasonpoints)) +
+  stat_ecdf()
+indycar_scores %>% 
+  ggplot(aes(x=seasonpoints)) +
+  geom_histogram() +
+  stat_bin(binwidth = 10)+
+  theme_bw()
+  
+
+#clustering
+install.packages("protoclust")
+library(protoclust)
 
 
+minimax_data <- indycar %>% 
+  dplyr::select(race_id,start,points,drive_id,team_id,track_type,chassis_engine_tires) %>%
+  group_by(drive_id) %>% 
+  mutate(seasonpoints = sum(points)) %>% 
+  mutate(average_start = mean(start)) %>% 
+  filter(race_id == "2019_Indianapolis_500")
+
+minimax_data %>% ggplot(aes(x = average_start,y = seasonpoints)) +
+  geom_point()
+  
+indycar_minimax <- protoclust(dist(dplyr::select(indycar,
+                                                 points,
+                                                 start)))
+plot(indycar_minimax)
+
+indycar_clusters <- 
+  protocut(indycar_minimax, k=4)
+
+indycar_filtered %>% indycar %>% 
+
+
+nba_filtered_stats <- nba_filtered_stats %>%
+  mutate(minimax_clusters = 
+           as.factor(minimax_player_clusters$cl))
+nba_filtered_stats %>%
+  ggplot(aes(x = x3pa, y = trb,
+             color = minimax_clusters
