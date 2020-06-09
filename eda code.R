@@ -172,7 +172,7 @@ indycar_plot %>%  ggplot() +
   geom_col(aes(x = drive_id,
                y = points,
                fill = track_type),
-           position = "") +
+           position = "") +   #can create a nice stacked column chart with this data, but when we do "dodge" the numbers are incorrect
   coord_flip() 
 
 
