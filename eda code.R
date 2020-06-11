@@ -165,6 +165,7 @@ indycar_seasonracers <- indycar %>%
   
 
 
+<<<<<<< HEAD
  #stacked bar chart
 indycar_seasonracers %>%  ggplot(aes(x = reorder(drive_idcleaned, -points),
                                      y = points,
@@ -184,6 +185,13 @@ indycar_seasonracers %>%  ggplot(aes(x = drive_id,
                                      y = points,
                                      fill = track_type)) +
   geom_col(position = "dodge") + #not correct when dodge is added, so weird
+=======
+indycar_plot %>%  ggplot() +
+  geom_col(aes(x = drive_id,
+               y = points,
+               fill = track_type),
+           position = "") +   #can create a nice stacked column chart with this data, but when we do "dodge" the numbers are incorrect
+>>>>>>> 7f82ae9a7a514d4eb4bde4302802c6ec1fdc1a69
   coord_flip() 
 
 #testing geom_col() with Titanic dataset, seems to work fine with the dodge function here
